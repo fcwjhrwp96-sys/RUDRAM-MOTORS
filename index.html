@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="gu">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#123b55">
+<link rel="manifest" href="manifest.json">
+<title>RUDRAM MOTORS</title>
+<style>
+body{margin:0;font-family:Arial;background:#f3f6f8;color:#18232d}
+header{background:#123b55;color:white;padding:22px 16px}
+main{padding:16px;max-width:900px;margin:auto}
+.card{background:white;border-radius:14px;padding:18px;margin:12px 0;box-shadow:0 2px 10px #0001}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.item{background:white;border-radius:12px;padding:18px;text-align:center}
+button{background:#123b55;color:white;border:0;border-radius:9px;padding:12px 16px}
+</style>
+</head>
+<body>
+
+<header>
+<h1>RUDRAM MOTORS</h1>
+<div>Garage Management App</div>
+</header>
+
+<main>
+
+<div class="card">
+<h2>🚗 Welcome</h2>
+<p>RUDRAM MOTORS Garage Management System</p>
+<button onclick="installApp()">📱 Install App</button>
+</div>
+
+<div class="grid">
+<div class="item">👥<br><b>Customers</b><br>Customer & Vehicle</div>
+<div class="item">🔧<br><b>Job Card</b><br>Service Management</div>
+<div class="item">🧾<br><b>Invoice</b><br>GST & Payment</div>
+<div class="item">👨‍🔧<br><b>Attendance</b><br>Staff Attendance</div>
+<div class="item">📦<br><b>Inventory</b><br>Parts & Stock</div>
+<div class="item">🛠️<br><b>IQ200 / DTC</b><br>Diagnosis</div>
+<div class="item">⭐<br><b>Customer Response</b><br>Feedback</div>
+<div class="item">📲<br><b>Reminder</b><br>Service Reminder</div>
+</div>
+
+<div class="card">
+<h3>📊 Dashboard</h3>
+<p>Sales • Pending • Jobs • Customers</p>
+</div>
+
+</main>
+
+<script>
+let deferredPrompt;
+
+window.addEventListener("beforeinstallprompt",e=>{
+e.preventDefault();
+deferredPrompt=e;
+});
+
+function installApp(){
+if(deferredPrompt){
+deferredPrompt.prompt();
+deferredPrompt=null;
+}else{
+alert("Safari ma Share → Add to Home Screen karo.");
+}
+}
+
+if("serviceWorker" in navigator){
+navigator.serviceWorker.register("sw.js");
+}
+</script>
+
+</body>
+</html>

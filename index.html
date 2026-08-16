@@ -30,38 +30,50 @@
 
     header h1 {
       margin: 0;
-      font-size: 26px;
+      font-size: 27px;
     }
 
     header p {
-      margin: 5px 0 0;
+      margin: 6px 0 0;
     }
 
     .container {
-      padding: 18px;
-      max-width: 600px;
+      max-width: 650px;
       margin: auto;
+      padding: 18px;
     }
 
     .card {
       background: white;
       padding: 18px;
-      margin-bottom: 15px;
-      border-radius: 15px;
-      box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+      margin-bottom: 16px;
+      border-radius: 16px;
+      box-shadow: 0 3px 12px rgba(0,0,0,0.08);
     }
 
     h2 {
       margin-top: 0;
     }
 
-    input {
+    h3 {
+      margin-bottom: 8px;
+    }
+
+    input,
+    textarea,
+    select {
       width: 100%;
       padding: 13px;
       margin: 7px 0;
       border: 1px solid #ddd;
       border-radius: 10px;
       font-size: 16px;
+      background: white;
+    }
+
+    textarea {
+      min-height: 80px;
+      resize: vertical;
     }
 
     button {
@@ -82,30 +94,77 @@
     }
 
     .customer {
-      border: 1px solid #eee;
-      border-radius: 12px;
-      padding: 14px;
-      margin-top: 10px;
+      border: 1px solid #e5e5e5;
+      border-radius: 13px;
+      padding: 15px;
+      margin-top: 12px;
       background: #fafafa;
     }
 
-    .customer strong {
-      font-size: 18px;
+    .customer-name {
+      font-size: 19px;
+      font-weight: bold;
+    }
+
+    .service {
+      background: white;
+      border: 1px solid #eee;
+      padding: 13px;
+      margin-top: 10px;
+      border-radius: 10px;
+    }
+
+    .service p {
+      margin: 7px 0;
     }
 
     .delete {
       background: #d63031;
-      margin-top: 8px;
     }
 
     .delete:hover {
       background: #b71c1c;
     }
 
+    .history-btn {
+      background: #0984e3;
+    }
+
+    .history-btn:hover {
+      background: #0875c1;
+    }
+
+    .back-btn {
+      background: #555;
+    }
+
     .empty {
       text-align: center;
       color: #777;
       padding: 20px;
+    }
+
+    .amount {
+      font-size: 18px;
+      font-weight: bold;
+    }
+
+    .paid {
+      color: green;
+      font-weight: bold;
+    }
+
+    .pending {
+      color: #d63031;
+      font-weight: bold;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .customer-info {
+      line-height: 1.6;
     }
   </style>
 </head>
@@ -117,34 +176,118 @@
   <p>Garage Management System</p>
 </header>
 
+
 <div class="container">
 
-  <div class="card">
+  <!-- ADD CUSTOMER -->
+
+  <div class="card" id="customerSection">
+
     <h2>➕ Add Customer</h2>
 
-    <input id="name" type="text" placeholder="Customer Name">
+    <input
+      id="name"
+      type="text"
+      placeholder="Customer Name"
+    >
 
-    <input id="mobile" type="tel" placeholder="Mobile Number">
+    <input
+      id="mobile"
+      type="tel"
+      placeholder="Mobile Number"
+    >
 
-    <input id="vehicle" type="text" placeholder="Vehicle Number">
+    <input
+      id="vehicle"
+      type="text"
+      placeholder="Vehicle Number"
+    >
 
-    <input id="model" type="text" placeholder="Vehicle Model">
+    <input
+      id="model"
+      type="text"
+      placeholder="Vehicle Model"
+    >
 
-    <button onclick="addCustomer()">Save Customer</button>
+    <button onclick="addCustomer()">
+      Save Customer
+    </button>
+
   </div>
 
 
-  <div class="card">
+  <!-- CUSTOMER LIST -->
+
+  <div class="card" id="listSection">
+
     <h2>👥 Customer List</h2>
 
     <input
       id="search"
       type="text"
-      placeholder="Search Customer / Vehicle Number"
+      placeholder="Search Customer / Vehicle / Mobile"
       oninput="showCustomers()"
     >
 
     <div id="customerList"></div>
+
+  </div>
+
+
+  <!-- SERVICE HISTORY -->
+
+  <div class="card hidden" id="historySection">
+
+    <button
+      class="back-btn"
+      onclick="backToCustomers()">
+      ← Back to Customers
+    </button>
+
+    <h2>🔧 Service History</h2>
+
+    <div id="selectedCustomer"></div>
+
+    <hr>
+
+    <h3>➕ Add New Service</h3>
+
+    <input
+      id="serviceDate"
+      type="date"
+    >
+
+    <textarea
+      id="work"
+      placeholder="કરેલું કામ / Work Details"
+    ></textarea>
+
+    <input
+      id="amount"
+      type="number"
+      placeholder="Total Amount ₹"
+    >
+
+    <select id="payment">
+      <option value="Paid">Paid</option>
+      <option value="Pending">Pending</option>
+    </select>
+
+    <input
+      id="nextService"
+      type="date"
+    >
+
+    <button onclick="addService()">
+      Save Service
+    </button>
+
+    <h3 style="margin-top:25px;">
+      📋 Previous Services
+    </h3>
+
+    <div id="serviceList"></div>
+
   </div>
 
 </div>
@@ -152,127 +295,650 @@
 
 <script>
 
-  let customers = JSON.parse(
-    localStorage.getItem("rudramCustomers")
-  ) || [];
+  /* =========================
+     CUSTOMER DATA
+  ========================= */
 
+  let customers =
+    JSON.parse(localStorage.getItem("rudramCustomers")) || [];
+
+
+  let selectedCustomerId = null;
+
+
+  /* =========================
+     ADD CUSTOMER
+  ========================= */
 
   function addCustomer() {
 
-    const name = document.getElementById("name").value.trim();
-    const mobile = document.getElementById("mobile").value.trim();
-    const vehicle = document.getElementById("vehicle").value.trim();
-    const model = document.getElementById("model").value.trim();
+    const name =
+      document.getElementById("name").value.trim();
+
+    const mobile =
+      document.getElementById("mobile").value.trim();
+
+    const vehicle =
+      document.getElementById("vehicle").value.trim();
+
+    const model =
+      document.getElementById("model").value.trim();
+
 
     if (!name || !mobile || !vehicle || !model) {
+
       alert("કૃપા કરીને બધી માહિતી ભરો.");
+
       return;
     }
 
+
     const customer = {
+
       id: Date.now(),
+
       name: name,
+
       mobile: mobile,
+
       vehicle: vehicle.toUpperCase(),
-      model: model
+
+      model: model,
+
+      services: []
+
     };
+
 
     customers.push(customer);
 
-    localStorage.setItem(
-      "rudramCustomers",
-      JSON.stringify(customers)
-    );
+
+    saveCustomers();
+
 
     document.getElementById("name").value = "";
+
     document.getElementById("mobile").value = "";
+
     document.getElementById("vehicle").value = "";
+
     document.getElementById("model").value = "";
 
+
     showCustomers();
+
 
     alert("Customer successfully saved! ✅");
   }
 
 
-  function showCustomers() {
+  /* =========================
+     SAVE CUSTOMER DATA
+  ========================= */
 
-    const list = document.getElementById("customerList");
-    const search = document
-      .getElementById("search")
-      .value
-      .toLowerCase();
-
-    const filtered = customers.filter(customer =>
-      customer.name.toLowerCase().includes(search) ||
-      customer.vehicle.toLowerCase().includes(search) ||
-      customer.mobile.includes(search)
-    );
-
-    if (filtered.length === 0) {
-      list.innerHTML =
-        '<div class="empty">કોઈ customer મળ્યો નથી.</div>';
-      return;
-    }
-
-    list.innerHTML = "";
-
-    filtered.forEach(customer => {
-
-      const div = document.createElement("div");
-
-      div.className = "customer";
-
-      div.innerHTML = `
-        <strong>${customer.name}</strong>
-
-        <p>📞 ${customer.mobile}</p>
-
-        <p>🚗 ${customer.vehicle}</p>
-
-        <p>🔧 ${customer.model}</p>
-
-        <button
-          class="delete"
-          onclick="deleteCustomer(${customer.id})">
-          Delete Customer
-        </button>
-      `;
-
-      list.appendChild(div);
-    });
-  }
-
-
-  function deleteCustomer(id) {
-
-    if (!confirm("આ customer delete કરવો છે?")) {
-      return;
-    }
-
-    customers = customers.filter(
-      customer => customer.id !== id
-    );
+  function saveCustomers() {
 
     localStorage.setItem(
       "rudramCustomers",
       JSON.stringify(customers)
     );
 
-    showCustomers();
   }
 
 
-  showCustomers();
+  /* =========================
+     SHOW CUSTOMERS
+  ========================= */
 
+  function showCustomers() {
+
+    const list =
+      document.getElementById("customerList");
+
+    const search =
+      document
+      .getElementById("search")
+      .value
+      .toLowerCase();
+
+
+    const filtered =
+      customers.filter(customer =>
+
+        customer.name
+        .toLowerCase()
+        .includes(search)
+
+        ||
+
+        customer.vehicle
+        .toLowerCase()
+        .includes(search)
+
+        ||
+
+        customer.mobile
+        .includes(search)
+
+      );
+
+
+    if (filtered.length === 0) {
+
+      list.innerHTML =
+        '<div class="empty">કોઈ customer મળ્યો નથી.</div>';
+
+      return;
+    }
+
+
+    list.innerHTML = "";
+
+
+    filtered.forEach(customer => {
+
+      const div =
+        document.createElement("div");
+
+
+      div.className = "customer";
+
+
+      div.innerHTML = `
+
+        <div class="customer-name">
+          👤 ${escapeHTML(customer.name)}
+        </div>
+
+        <div class="customer-info">
+
+          📞 ${escapeHTML(customer.mobile)}<br>
+
+          🚗 ${escapeHTML(customer.vehicle)}<br>
+
+          🔧 ${escapeHTML(customer.model)}
+
+        </div>
+
+
+        <button
+          class="history-btn"
+          onclick="openHistory(${customer.id})">
+
+          🔧 Service History
+
+        </button>
+
+
+        <button
+          class="delete"
+          onclick="deleteCustomer(${customer.id})">
+
+          🗑️ Delete Customer
+
+        </button>
+
+      `;
+
+
+      list.appendChild(div);
+
+    });
+
+  }
+
+
+  /* =========================
+     OPEN SERVICE HISTORY
+  ========================= */
+
+  function openHistory(id) {
+
+    selectedCustomerId = id;
+
+
+    const customer =
+      customers.find(c => c.id === id);
+
+
+    if (!customer) return;
+
+
+    document
+      .getElementById("customerSection")
+      .classList.add("hidden");
+
+
+    document
+      .getElementById("listSection")
+      .classList.add("hidden");
+
+
+    document
+      .getElementById("historySection")
+      .classList.remove("hidden");
+
+
+    document
+      .getElementById("selectedCustomer")
+      .innerHTML = `
+
+        <div class="customer-info">
+
+          <strong>
+            👤 ${escapeHTML(customer.name)}
+          </strong>
+
+          <br>
+
+          📞 ${escapeHTML(customer.mobile)}
+
+          <br>
+
+          🚗 ${escapeHTML(customer.vehicle)}
+
+          <br>
+
+          🔧 ${escapeHTML(customer.model)}
+
+        </div>
+
+      `;
+
+
+    setTodayDate();
+
+    showServices();
+
+  }
+
+
+  /* =========================
+     SET TODAY DATE
+  ========================= */
+
+  function setTodayDate() {
+
+    const today =
+      new Date().toISOString().split("T")[0];
+
+
+    document
+      .getElementById("serviceDate")
+      .value = today;
+
+  }
+
+
+  /* =========================
+     ADD SERVICE
+  ========================= */
+
+  function addService() {
+
+    const customer =
+      customers.find(
+        c => c.id === selectedCustomerId
+      );
+
+
+    if (!customer) return;
+
+
+    const date =
+      document
+      .getElementById("serviceDate")
+      .value;
+
+
+    const work =
+      document
+      .getElementById("work")
+      .value.trim();
+
+
+    const amount =
+      document
+      .getElementById("amount")
+      .value;
+
+
+    const payment =
+      document
+      .getElementById("payment")
+      .value;
+
+
+    const nextService =
+      document
+      .getElementById("nextService")
+      .value;
+
+
+    if (!date || !work || !amount) {
+
+      alert("Service Date, Work અને Amount ભરો.");
+
+      return;
+    }
+
+
+    const service = {
+
+      id: Date.now(),
+
+      date: date,
+
+      work: work,
+
+      amount: Number(amount),
+
+      payment: payment,
+
+      nextService: nextService
+
+    };
+
+
+    if (!customer.services) {
+
+      customer.services = [];
+
+    }
+
+
+    customer.services.unshift(service);
+
+
+    saveCustomers();
+
+
+    document
+      .getElementById("work")
+      .value = "";
+
+
+    document
+      .getElementById("amount")
+      .value = "";
+
+
+    document
+      .getElementById("nextService")
+      .value = "";
+
+
+    showServices();
+
+
+    alert("Service saved successfully! ✅");
+
+  }
+
+
+  /* =========================
+     SHOW SERVICES
+  ========================= */
+
+  function showServices() {
+
+    const customer =
+      customers.find(
+        c => c.id === selectedCustomerId
+      );
+
+
+    const list =
+      document.getElementById("serviceList");
+
+
+    if (!customer ||
+        !customer.services ||
+        customer.services.length === 0) {
+
+      list.innerHTML =
+        '<div class="empty">હજુ કોઈ service history નથી.</div>';
+
+      return;
+
+    }
+
+
+    list.innerHTML = "";
+
+
+    customer.services.forEach(service => {
+
+      const div =
+        document.createElement("div");
+
+
+      div.className = "service";
+
+
+      const paymentClass =
+        service.payment === "Paid"
+        ? "paid"
+        : "pending";
+
+
+      div.innerHTML = `
+
+        <p>
+          📅 <strong>
+          ${formatDate(service.date)}
+          </strong>
+        </p>
+
+
+        <p>
+          🛠️ ${escapeHTML(service.work)}
+        </p>
+
+
+        <p class="amount">
+          💰 ₹${Number(service.amount).toLocaleString("en-IN")}
+        </p>
+
+
+        <p class="${paymentClass}">
+          💳 ${escapeHTML(service.payment)}
+        </p>
+
+
+        ${
+          service.nextService
+          ?
+          `<p>
+            📆 Next Service:
+            <strong>
+            ${formatDate(service.nextService)}
+            </strong>
+          </p>`
+          :
+          ""
+        }
+
+
+        <button
+          class="delete"
+          onclick="deleteService(${service.id})">
+
+          🗑️ Delete Service
+
+        </button>
+
+      `;
+
+
+      list.appendChild(div);
+
+    });
+
+  }
+
+
+  /* =========================
+     DELETE SERVICE
+  ========================= */
+
+  function deleteService(serviceId) {
+
+    if (!confirm("આ service delete કરવી છે?")) {
+
+      return;
+
+    }
+
+
+    const customer =
+      customers.find(
+        c => c.id === selectedCustomerId
+      );
+
+
+    if (!customer) return;
+
+
+    customer.services =
+      customer.services.filter(
+        service => service.id !== serviceId
+      );
+
+
+    saveCustomers();
+
+
+    showServices();
+
+  }
+
+
+  /* =========================
+     DELETE CUSTOMER
+  ========================= */
+
+  function deleteCustomer(id) {
+
+    if (!confirm(
+      "આ customer અને તેની service history delete કરવી છે?"
+    )) {
+
+      return;
+
+    }
+
+
+    customers =
+      customers.filter(
+        customer => customer.id !== id
+      );
+
+
+    saveCustomers();
+
+
+    showCustomers();
+
+  }
+
+
+  /* =========================
+     BACK
+  ========================= */
+
+  function backToCustomers() {
+
+    selectedCustomerId = null;
+
+
+    document
+      .getElementById("historySection")
+      .classList.add("hidden");
+
+
+    document
+      .getElementById("customerSection")
+      .classList.remove("hidden");
+
+
+    document
+      .getElementById("listSection")
+      .classList.remove("hidden");
+
+
+    showCustomers();
+
+  }
+
+
+  /* =========================
+     DATE FORMAT
+  ========================= */
+
+  function formatDate(dateString) {
+
+    if (!dateString) return "";
+
+    const parts =
+      dateString.split("-");
+
+    if (parts.length !== 3) {
+
+      return dateString;
+
+    }
+
+
+    return `${parts[2]}/${parts[1]}/${parts[0]}`;
+
+  }
+
+
+  /* =========================
+     SECURITY
+  ========================= */
+
+  function escapeHTML(text) {
+
+    const div =
+      document.createElement("div");
+
+    div.textContent = text;
+
+    return div.innerHTML;
+
+  }
+
+
+  /* =========================
+     SERVICE WORKER
+  ========================= */
 
   if ("serviceWorker" in navigator) {
-    navigator.serviceWorker.register("sw.js")
-      .then(() => console.log("Service Worker Registered"))
+
+    navigator.serviceWorker
+      .register("sw.js")
+      .then(() =>
+        console.log(
+          "Service Worker Registered"
+        )
+      )
       .catch(error =>
-        console.log("Service Worker Error:", error)
+        console.log(
+          "Service Worker Error:",
+          error
+        )
       );
+
   }
+
+
+  /* =========================
+     INITIAL LOAD
+  ========================= */
+
+  showCustomers();
 
 </script>
 

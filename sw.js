@@ -1,11 +1,9 @@
-const CACHE = "rudram-motors-v2";
+const CACHE = "rudram-motors-v3";
 
 const APP_FILES = [
   "./",
   "./index.html",
   "./manifest.json",
-  "./icon.svg",
-  "./favicon.svg",
   "./offline.html"
 ];
 
@@ -34,19 +32,6 @@ self.addEventListener("fetch", event => {
 
   event.respondWith(
     fetch(event.request)
-      .then(response => {
-        const copy = response.clone();
-
-        caches.open(CACHE).then(cache => {
-          cache.put(event.request, copy);
-        });
-
-        return response;
-      })
-      .catch(() =>
-        caches.match(event.request).then(cached => {
-          return cached || caches.match("./offline.html");
-        })
-      )
+      .catch(() => caches.match(event.request))
   );
 });

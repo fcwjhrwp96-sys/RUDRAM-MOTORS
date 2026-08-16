@@ -1,74 +1,279 @@
 <!DOCTYPE html>
 <html lang="gu">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="theme-color" content="#123b55">
-<link rel="manifest" href="manifest.json">
-<title>RUDRAM MOTORS</title>
-<style>
-body{margin:0;font-family:Arial;background:#f3f6f8;color:#18232d}
-header{background:#123b55;color:white;padding:22px 16px}
-main{padding:16px;max-width:900px;margin:auto}
-.card{background:white;border-radius:14px;padding:18px;margin:12px 0;box-shadow:0 2px 10px #0001}
-.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
-.item{background:white;border-radius:12px;padding:18px;text-align:center}
-button{background:#123b55;color:white;border:0;border-radius:9px;padding:12px 16px}
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#ff6b00">
+  <link rel="manifest" href="manifest.json">
+
+  <title>RUDRAM MOTORS</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: Arial, sans-serif;
+    }
+
+    body {
+      margin: 0;
+      background: #f4f6f8;
+      color: #222;
+    }
+
+    header {
+      background: linear-gradient(135deg, #ff6b00, #ff9500);
+      color: white;
+      padding: 20px;
+      text-align: center;
+      border-radius: 0 0 20px 20px;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 26px;
+    }
+
+    header p {
+      margin: 5px 0 0;
+    }
+
+    .container {
+      padding: 18px;
+      max-width: 600px;
+      margin: auto;
+    }
+
+    .card {
+      background: white;
+      padding: 18px;
+      margin-bottom: 15px;
+      border-radius: 15px;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+    }
+
+    h2 {
+      margin-top: 0;
+    }
+
+    input {
+      width: 100%;
+      padding: 13px;
+      margin: 7px 0;
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      font-size: 16px;
+    }
+
+    button {
+      width: 100%;
+      padding: 13px;
+      border: none;
+      border-radius: 10px;
+      background: #ff6b00;
+      color: white;
+      font-size: 16px;
+      font-weight: bold;
+      margin-top: 10px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #e85d00;
+    }
+
+    .customer {
+      border: 1px solid #eee;
+      border-radius: 12px;
+      padding: 14px;
+      margin-top: 10px;
+      background: #fafafa;
+    }
+
+    .customer strong {
+      font-size: 18px;
+    }
+
+    .delete {
+      background: #d63031;
+      margin-top: 8px;
+    }
+
+    .delete:hover {
+      background: #b71c1c;
+    }
+
+    .empty {
+      text-align: center;
+      color: #777;
+      padding: 20px;
+    }
+  </style>
 </head>
+
 <body>
 
 <header>
-<h1>RUDRAM MOTORS</h1>
-<div>Garage Management App</div>
+  <h1>🚗 RUDRAM MOTORS</h1>
+  <p>Garage Management System</p>
 </header>
 
-<main>
+<div class="container">
 
-<div class="card">
-<h2>🚗 Welcome</h2>
-<p>RUDRAM MOTORS Garage Management System</p>
-<button onclick="installApp()">📱 Install App</button>
+  <div class="card">
+    <h2>➕ Add Customer</h2>
+
+    <input id="name" type="text" placeholder="Customer Name">
+
+    <input id="mobile" type="tel" placeholder="Mobile Number">
+
+    <input id="vehicle" type="text" placeholder="Vehicle Number">
+
+    <input id="model" type="text" placeholder="Vehicle Model">
+
+    <button onclick="addCustomer()">Save Customer</button>
+  </div>
+
+
+  <div class="card">
+    <h2>👥 Customer List</h2>
+
+    <input
+      id="search"
+      type="text"
+      placeholder="Search Customer / Vehicle Number"
+      oninput="showCustomers()"
+    >
+
+    <div id="customerList"></div>
+  </div>
+
 </div>
 
-<div class="grid">
-<div class="item">👥<br><b>Customers</b><br>Customer & Vehicle</div>
-<div class="item">🔧<br><b>Job Card</b><br>Service Management</div>
-<div class="item">🧾<br><b>Invoice</b><br>GST & Payment</div>
-<div class="item">👨‍🔧<br><b>Attendance</b><br>Staff Attendance</div>
-<div class="item">📦<br><b>Inventory</b><br>Parts & Stock</div>
-<div class="item">🛠️<br><b>IQ200 / DTC</b><br>Diagnosis</div>
-<div class="item">⭐<br><b>Customer Response</b><br>Feedback</div>
-<div class="item">📲<br><b>Reminder</b><br>Service Reminder</div>
-</div>
-
-<div class="card">
-<h3>📊 Dashboard</h3>
-<p>Sales • Pending • Jobs • Customers</p>
-</div>
-
-</main>
 
 <script>
-let deferredPrompt;
 
-window.addEventListener("beforeinstallprompt",e=>{
-e.preventDefault();
-deferredPrompt=e;
-});
+  let customers = JSON.parse(
+    localStorage.getItem("rudramCustomers")
+  ) || [];
 
-function installApp(){
-if(deferredPrompt){
-deferredPrompt.prompt();
-deferredPrompt=null;
-}else{
-alert("Safari ma Share → Add to Home Screen karo.");
-}
-}
 
-if("serviceWorker" in navigator){
-navigator.serviceWorker.register("sw.js");
-}
+  function addCustomer() {
+
+    const name = document.getElementById("name").value.trim();
+    const mobile = document.getElementById("mobile").value.trim();
+    const vehicle = document.getElementById("vehicle").value.trim();
+    const model = document.getElementById("model").value.trim();
+
+    if (!name || !mobile || !vehicle || !model) {
+      alert("કૃપા કરીને બધી માહિતી ભરો.");
+      return;
+    }
+
+    const customer = {
+      id: Date.now(),
+      name: name,
+      mobile: mobile,
+      vehicle: vehicle.toUpperCase(),
+      model: model
+    };
+
+    customers.push(customer);
+
+    localStorage.setItem(
+      "rudramCustomers",
+      JSON.stringify(customers)
+    );
+
+    document.getElementById("name").value = "";
+    document.getElementById("mobile").value = "";
+    document.getElementById("vehicle").value = "";
+    document.getElementById("model").value = "";
+
+    showCustomers();
+
+    alert("Customer successfully saved! ✅");
+  }
+
+
+  function showCustomers() {
+
+    const list = document.getElementById("customerList");
+    const search = document
+      .getElementById("search")
+      .value
+      .toLowerCase();
+
+    const filtered = customers.filter(customer =>
+      customer.name.toLowerCase().includes(search) ||
+      customer.vehicle.toLowerCase().includes(search) ||
+      customer.mobile.includes(search)
+    );
+
+    if (filtered.length === 0) {
+      list.innerHTML =
+        '<div class="empty">કોઈ customer મળ્યો નથી.</div>';
+      return;
+    }
+
+    list.innerHTML = "";
+
+    filtered.forEach(customer => {
+
+      const div = document.createElement("div");
+
+      div.className = "customer";
+
+      div.innerHTML = `
+        <strong>${customer.name}</strong>
+
+        <p>📞 ${customer.mobile}</p>
+
+        <p>🚗 ${customer.vehicle}</p>
+
+        <p>🔧 ${customer.model}</p>
+
+        <button
+          class="delete"
+          onclick="deleteCustomer(${customer.id})">
+          Delete Customer
+        </button>
+      `;
+
+      list.appendChild(div);
+    });
+  }
+
+
+  function deleteCustomer(id) {
+
+    if (!confirm("આ customer delete કરવો છે?")) {
+      return;
+    }
+
+    customers = customers.filter(
+      customer => customer.id !== id
+    );
+
+    localStorage.setItem(
+      "rudramCustomers",
+      JSON.stringify(customers)
+    );
+
+    showCustomers();
+  }
+
+
+  showCustomers();
+
+
+  if ("serviceWorker" in navigator) {
+    navigator.serviceWorker.register("sw.js")
+      .then(() => console.log("Service Worker Registered"))
+      .catch(error =>
+        console.log("Service Worker Error:", error)
+      );
+  }
+
 </script>
 
 </body>
